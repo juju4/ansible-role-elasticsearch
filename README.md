@@ -10,11 +10,15 @@ Requires at least Java 8. You can use the [`geerlingguy.java`](https://github.co
 
 ## Role Variables
 
-Available variables are listed below, along with default values (see `defaults/main.yml`):
+Available variables are listed below, along with default values (see `defaults/main.yml` for default role variables, `vars/RedHat.yml` and  `vars/Debian.yml` for distribution specific variables):
 
     elasticsearch_version: '7.x'
 
 The major version to use when installing Elasticsearch.
+
+    elasticsearch_package: elasticsearch
+
+If you want to follow the latest release in the `elasticsearch_version` major release cycle, keep the default here. Otherwise you can add `-7.13.2` (for RHEL-based systems) or `=7.13.2` (for Debian-based systems) to lock in a specific version, e.g. `7.13.2`.
 
     elasticsearch_package_state: present
 
