@@ -37,7 +37,7 @@
   notify: restart elasticsearch
   when: elasticsearch_version[0] | int >= 7
 
-- include: settings.yml
+- include_tasks: settings.yml
 
 - name: Force a restart if configuration has changed.
   meta: flush_handlers
