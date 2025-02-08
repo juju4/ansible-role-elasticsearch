@@ -1,3 +1,13 @@
 ---
+
+- name: Add to keystore
+  ansible.builtin.command:
+    cmd: "{{ item }}"
+  loop:
+    # - "echo {{ elasticsearch_cert_pass }} | /usr/share/elasticsearch/bin/elasticsearch-keystore add -fx xpack.security.http.ssl.keystore.secure_password"
+    - "/usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.http.ssl.keystore.secure_password"
+    - "echo {{ elasticsearch_cert_pass }} | /usr/share/elasticsearch/bin/elasticsearch-keystore add -fx xpack.security.transport.ssl.keystore.secure_password"
+    - "echo {{ elasticsearch_cert_pass }} | /usr/share/elasticsearch/bin/elasticsearch-keystore add -fx xpack.security.transport.ssl.truststore.secure_password"
+
 - name: restart elasticsearch
   service: name=elasticsearch state=restarted

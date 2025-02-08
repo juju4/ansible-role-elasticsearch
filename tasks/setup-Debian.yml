@@ -6,9 +6,19 @@
       - gnupg2
     state: present
 
+# workaround for apt_key not supporting proxy (ansible#31691) - nok
+# get url still attempting dns resolution while it should be the proxy...
+- name: Download Elasticsearch apt key.  # noqa command-instead-of-module
+  ansible.builtin.command: curl -s -o /var/tmp/GPG-KEY-elasticsearch https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  args:
+    creates: /var/tmp/GPG-KEY-elasticsearch
+  environment:
+    http_proxy: "{{ proxy_url | default(omit) }}"
+
 - name: Add Elasticsearch apt key.
   apt_key:
-    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    # url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    file: /var/tmp/GPG-KEY-elasticsearch
     state: present
 
 - name: Add Elasticsearch repository.

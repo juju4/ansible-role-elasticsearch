@@ -22,3 +22,32 @@
     backup: true
   notify: restart elasticsearch
   when: elasticsearch_es_java_opts is defined and elasticsearch_es_java_opts
+
+- name: Elastic | Generate CA
+  ansible.builtin.command:
+    cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil ca --out /root/elastic-stack-ca.p12 --pass {{ elasticsearch_cert_ca_pass }}"
+  args:
+    creates: /root/elastic-stack-ca.p12
+- name: Elastic | Generate Certificate
+  ansible.builtin.command:
+    cmd: "/usr/share/elasticsearch/bin/elasticsearch-certutil cert --ca /root/elastic-stack-ca.p12 --ca-pass {{ elasticsearch_cert_ca_pass }} --out /etc/elasticsearch/elastic-certificates.p12 --pass {{ elasticsearch_cert_pass }}"
+  args:
+    creates: /etc/elasticsearch/elastic-certificates.p12
+  notify:
+    - Add to keystore
+
+- name: Ensure correct certificate permissions
+  ansible.builtin.file:
+    path: /etc/elasticsearch/elastic-certificates.p12
+    mode: 0640
+    owner: root
+    group: elasticsearch
+
+# elasticsearch user must be able to write /etc/elasticsearch/elasticsearch.keystore*
+# 'systemd-entrypoint[11984]: ERROR: unable to create temporary keystore at [/etc/elasticsearch/elasticsearch.keystore.tmp], write permissions required for [/etc/elasticsearch] or run [elasticsearch-keystore upgrade]'
+- name: Ensure correct /etc/elasticsearch permissions
+  ansible.builtin.file:
+    path: /etc/elasticsearch
+    mode: '2770'
+    owner: root
+    group: elasticsearch

@@ -12,4 +12,8 @@ elasticsearch_http_port: 9200
 elasticsearch_heap_size_min: 1g
 elasticsearch_heap_size_max: 2g
 
+elasticsearch_cert_ca_pass:
+elasticsearch_cert_pass:
+
 elasticsearch_extra_options: ''
+elasticsearch_no_log: true
