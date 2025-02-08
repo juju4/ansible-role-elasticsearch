@@ -15,5 +15,15 @@ elasticsearch_heap_size_max: 2g
 elasticsearch_cert_ca_pass:
 elasticsearch_cert_pass:
 
+elasticsearch_users: []
+#   - { user: cribl,
+#       pass: xxxx,
+#       role: beats_system
+#   }
+#   - { user: kibana,
+#       pass: xxxx,
+#       role: kibana_system
+#   }
+
 elasticsearch_extra_options: ''
 elasticsearch_no_log: true

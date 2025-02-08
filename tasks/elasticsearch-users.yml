@@ -1,0 +1,16 @@
+---
+
+- name: Get elasticsearch users list
+  ansible.builtin.command:
+    cmd: "/usr/share/elasticsearch/bin/elasticsearch-users list"
+  changed_when: false
+  register: es_users_list
+
+- name: Ensure elasticsearch users exist
+  ansible.builtin.command:
+    cmd: '/usr/share/elasticsearch/bin/elasticsearch-users useradd "{{ item.user }}" -p "{{ item.pass }}" -r "{{ item.role }}"'
+  when:
+    - "item.user not in es_users_list.stdout"
+  loop: "{{ elasticsearch_users }}"
+  no_log: "{{ elasticsearch_no_log }}"
+

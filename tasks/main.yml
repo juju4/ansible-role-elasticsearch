@@ -50,7 +50,12 @@
 
 - name: Make sure Elasticsearch is running before proceeding.
   wait_for:
-    host: "{{ elasticsearch_network_host }}"
+    host: "{{ elasticsearch_network_host | first }}"
     port: "{{ elasticsearch_http_port }}"
     delay: 3
     timeout: 300
+
+- name: Import elasticsearch-users
+  ansible.builtin.import_tasks: elasticsearch-users.yml
+  when:
+    - elasticsearch_users != []
