@@ -1,0 +1,142 @@
+---
+
+- name: Verify elasticsearch
+  hosts: "{{ playbook_hosts | default('all') }}"
+  become: yes
+  vars:
+    exec_file: /usr/share/elasticsearch/bin/elasticsearch
+    cfg_file: /etc/elasticsearch/elasticsearch.yml
+    processes:
+      - { u: elasticsearch, p: java }
+    ports:
+      - { h: 127.0.0.1, p: 9200 }
+      - { h: 127.0.0.1, p: 9300 }
+      - { h: 0.0.0.0, p: 9200 }
+      - { h: '::', p: 9300 }
+    p12_file: /etc/elasticsearch/elastic-certificates.p12
+    is_container: false
+  pre_tasks:
+    - name: RedHat | Ensure ps and host are present
+      ansible.builtin.package:
+        name:
+          - procps-ng
+        state: present
+      when: ansible_os_family == "RedHat" and ansible_distribution_major_version | int >= 8
+    - name: Debian | Ensure ps and host present
+      ansible.builtin.package:
+        name:
+          - procps
+        state: present
+      when: ansible_os_family == "Debian"
+    - name: Debug | var ansible_virtualization_type
+      ansible.builtin.debug:
+        var: ansible_virtualization_type
+    - name: Set fact is_container
+      ansible.builtin.set_fact:
+        is_container: true
+      when: >
+        (ansible_virtualization_type is defined and
+          (ansible_virtualization_type == "docker"
+           or ansible_virtualization_type == "containerd"
+           or ansible_virtualization_type == "container"
+          )
+        )
+  tasks:
+    - name: Ensure config file is present
+      ansible.builtin.stat:
+        path: "{{ cfg_file }}"
+      register: cfg
+      when:
+        - cfg_file|string
+    - name: Validate config present
+      ansible.builtin.assert:
+        that: cfg.stat.exists and cfg.stat.size != 0
+      when:
+        - cfg_file|string
+
+    - name: Ensure p12 file is present
+      ansible.builtin.stat:
+        path: "{{ p12_file }}"
+      register: p12
+      when:
+        - p12_file|string
+    - name: Validate p12 present
+      ansible.builtin.assert:
+        that: p12.stat.exists and p12.stat.size != 0
+      when:
+        - p12_file|string
+
+    - name: Check executable
+      ansible.builtin.stat:
+        path: "{{ exec_file }}"
+      register: bin1
+      become: yes
+    - name: Validate executable is present
+      ansible.builtin.assert:
+        that:
+          - bin1.stat.exists and bin1.stat.size != 0 and bin1.stat.mode == '0755'
+
+    - name: Ensure processes are running
+      ansible.builtin.command:
+        cmd: "pgrep -u {{ item.u }} {{ item.p }}"
+      register: ps
+      changed_when: false
+      failed_when: false
+      loop: "{{ processes }}"
+    - name: Validate ps output
+      ansible.builtin.assert:
+        that:
+          - item.stdout | length > 0
+      loop: "{{ ps.results }}"
+      when:
+        - not is_container|bool
+
+    - name: Check all processes
+      ansible.builtin.command: ps aux
+      changed_when: false
+      register: psa
+    - name: Debug | ps aux output
+      ansible.builtin.debug:
+        var: psa
+        verbosity: 1
+
+    - name: Ensure ports are listening
+      ansible.builtin.wait_for:
+        host: "{{ item.h }}"
+        port: "{{ item.p }}"
+        timeout: 10
+      with_items: "{{ ports }}"
+      when:
+        - not is_container|bool
+
+    - name: Fetch log file
+      ansible.builtin.slurp:
+        src: "/var/log/elasticsearch/elasticsearch.log"
+      register: log1
+      failed_when: false
+    - name: Validate log
+      ansible.builtin.assert:
+        that:
+          - "'Bootstrapping java SecurityManager' in log1['content'] | b64decode"
+          - "'loaded module' in log1['content'] | b64decode"
+          - "'current.health=' in log1['content'] | b64decode"
+          - "'fatal' not in log1['content'] | b64decode"
+          - "'failed' not in log1['content'] | b64decode"
+          - "'Exception' not in log1['content'] | b64decode"
+      ignore_errors: true
+      when:
+        - not is_container|bool
+
+    - name: Get keystore settings
+      ansible.builtin.command:
+        cmd: "/usr/share/elasticsearch/bin/elasticsearch-keystore list"
+      register: keystore
+      changed_when: false
+      failed_when: false
+    - name: Validate keystore output
+      ansible.builtin.assert:
+        that:
+          - "'keystore.seed' in keystore.stdout"
+          - "'xpack.security.transport.ssl.keystore.secure_password' in keystore.stdout"
+          - "'xpack.security.transport.ssl.truststore.secure_password' in keystore.stdout"
+

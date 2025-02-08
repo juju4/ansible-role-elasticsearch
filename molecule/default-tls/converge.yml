@@ -1,0 +1,20 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    elasticsearch_cert_ca_pass: 123456
+    elasticsearch_cert_pass: 123456
+    elasticsearch_extra_options: |
+      discovery.type: single-node
+      xpack.security.transport.ssl.enabled: true
+
+  pre_tasks:
+    - name: Update apt cache.
+      apt: update_cache=true cache_valid_time=600
+      when: ansible_os_family == 'Debian'
+      changed_when: false
+
+  roles:
+    - role: geerlingguy.java
+    - role: geerlingguy.elasticsearch
