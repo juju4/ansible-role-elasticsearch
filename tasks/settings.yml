@@ -51,3 +51,13 @@
     mode: '2770'
     owner: root
     group: elasticsearch
+
+- name: Add extra entries to keystore
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      echo '{{ item.value }}' | /usr/share/elasticsearch/bin/elasticsearch-keystore add -fx '{{ item.name }}'
+  args:
+    executable: /bin/bash
+  loop: "{{ elasticsearch_extra_keystore }}"
+  no_log: "{{ elasticsearch_no_log }}"

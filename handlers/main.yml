@@ -1,8 +1,12 @@
 ---
 
 - name: Add to keystore
-  ansible.builtin.command:
-    cmd: "{{ item }}"
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      {{ item }}
+  args:
+    executable: /bin/bash
   loop:
     # - "echo {{ elasticsearch_cert_pass }} | /usr/share/elasticsearch/bin/elasticsearch-keystore add -fx xpack.security.http.ssl.keystore.secure_password"
     - "/usr/share/elasticsearch/bin/elasticsearch-keystore remove xpack.security.http.ssl.keystore.secure_password"

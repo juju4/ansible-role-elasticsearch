@@ -26,4 +26,6 @@ elasticsearch_users: []
 #   }
 
 elasticsearch_extra_options: ''
+elasticsearch_extra_keystore: []
+#  - { name: 'xpack.security.authc.realms.oidc.oidc1.rp.client_secret', value: 'xyz' }
 elasticsearch_no_log: true
