@@ -26,7 +26,7 @@ elasticsearch_users: []
 #   }
 
 elasticsearch_elastic_apt_gpg_key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-elasticsearch_repo: true
+elasticsearch_add_repo: true
 elasticsearch_ignore_key_error: true
 
 elasticsearch_extra_options: ''
