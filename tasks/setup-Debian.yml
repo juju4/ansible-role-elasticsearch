@@ -7,12 +7,18 @@
     state: present
 
 - name: Add Elasticsearch apt key.
-  apt_key:
-    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    state: present
+  ansible.builtin.get_url:
+    url: "{{ elasticsearch_elastic_apt_gpg_key }}"
+    dest: /etc/apt/trusted.gpg.d/elasticsearch.asc
+    mode: '0644'
+    force: true
+  environment: "{{ proxy_env | default(omit) }}"
+  register: add_repository_key
+  ignore_errors: "{{ elasticsearch_apt_ignore_key_error }}"
+  when: elasticsearch_add_repo | bool
 
 - name: Add Elasticsearch repository.
   apt_repository:
-    repo: 'deb https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main'
+    repo: 'deb [signed-by=/etc/apt/trusted.gpg.d/filebeat.asc] https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main'
     state: present
     update_cache: true

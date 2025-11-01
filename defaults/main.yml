@@ -12,4 +12,21 @@ elasticsearch_http_port: 9200
 elasticsearch_heap_size_min: 1g
 elasticsearch_heap_size_max: 2g
 
+elasticsearch_cert_ca_pass:
+elasticsearch_cert_pass:
+
+elasticsearch_users: []
+#   - { user: cribl,
+#       pass: xxxx,
+#       role: beats_system
+#   }
+#   - { user: kibana,
+#       pass: xxxx,
+#       role: kibana_system
+#   }
+
+elasticsearch_elastic_apt_gpg_key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+elasticsearch_repo: true
+elasticsearch_ignore_key_error: true
+
 elasticsearch_extra_options: ''
