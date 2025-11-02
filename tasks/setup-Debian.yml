@@ -19,6 +19,6 @@
 
 - name: Add Elasticsearch repository.
   apt_repository:
-    repo: 'deb [signed-by=/etc/apt/trusted.gpg.d/filebeat.asc] https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main'
+    repo: 'deb [signed-by=/etc/apt/trusted.gpg.d/elasticsearch.asc] https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main'
     state: present
     update_cache: true
